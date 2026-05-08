@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "WebFetch(domain:api.anthropic.com)",
+      "Read(//private/tmp/**)",
+      "Bash(tar xf *)",
+      "Bash(grep -v \"^--$\")",
+      "Read(//Users/enzo/.claude/**)",
+      "mcp__Claude_Preview__preview_start",
+      "WebFetch(domain:photos.app.goo.gl)",
+      "WebFetch(domain:photos.google.com)"
+    ]
+  }
+}
