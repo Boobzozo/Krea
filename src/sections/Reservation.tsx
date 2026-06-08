@@ -25,7 +25,22 @@ interface Service {
   day_of_week?: string;
   start_time?: string;
   is_group_rate?: number;
+  specific_date?: Date;
+  is_special_event?: boolean;
 }
+
+// Événement spécial : Journée initiation — 27 juin 2026
+const JOURNEE_INITIATION_DATE = new Date('2026-06-27T00:00:00');
+const JOURNEE_INITIATION_SERVICE: Service = {
+  id: 'journee-initiation-27-juin',
+  name: "Journée d'initiation",
+  price: 0,
+  duration: 240,
+  category_id: 'special',
+  start_time: '15:00',
+  specific_date: JOURNEE_INITIATION_DATE,
+  is_special_event: true,
+};
 
 interface DiscountRule {
   participants: number;
@@ -136,7 +151,9 @@ const Reservation = ({ settings }: ReservationProps) => {
 
   const handleServiceSelect = (service: Service) => {
     setSelectedService(service);
-    if (service.day_of_week) {
+    if (service.specific_date) {
+      setAvailableDates([service.specific_date]);
+    } else if (service.day_of_week) {
       setAvailableDates(generateDates(service.day_of_week));
     } else {
       setAvailableDates([]);
@@ -293,6 +310,32 @@ const Reservation = ({ settings }: ReservationProps) => {
                   </div>
                 ) : (
                   <div className="grid md:grid-cols-2 gap-4">
+                    {/* Carte spéciale : Journée d'initiation (visible uniquement avant le 27 juin 2026) */}
+                    {Date.now() < JOURNEE_INITIATION_DATE.getTime() && (
+                      <button
+                        onClick={() => handleServiceSelect(JOURNEE_INITIATION_SERVICE)}
+                        className="group p-6 rounded-2xl border-2 border-gold/40 bg-gold/5 hover:border-gold hover:bg-gold/10 transition-all text-left relative overflow-hidden md:col-span-2"
+                      >
+                        <div className="absolute top-3 right-3">
+                          <span className="flex items-center gap-1 bg-gold text-white text-[10px] uppercase tracking-widest font-bold px-3 py-1 rounded-full">
+                            <Sparkles size={10} /> Événement spécial
+                          </span>
+                        </div>
+                        <div className="relative z-10">
+                          <div className="font-serif text-xl text-dark mb-1 group-hover:text-gold transition-colors">
+                            Journée d'initiation
+                          </div>
+                          <div className="flex items-center gap-4 text-xs text-dark/40 uppercase tracking-widest font-bold">
+                            <span className="flex items-center gap-1"><Clock size={12} /> 4h (15h – 19h)</span>
+                            <span className="flex items-center gap-1"><Sparkles size={12} /> Entrée libre</span>
+                          </div>
+                          <div className="mt-3 text-[10px] text-gold font-bold uppercase tracking-tighter">
+                            Samedi 27 juin 2026 · La Marjolaine, Moulay
+                          </div>
+                        </div>
+                        <ChevronRight className="absolute right-6 top-1/2 -translate-y-1/2 text-gold opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-2" />
+                      </button>
+                    )}
                     {services.map((service) => (
                       <button
                         key={service.id}
@@ -307,7 +350,7 @@ const Reservation = ({ settings }: ReservationProps) => {
                           </div>
                           {service.day_of_week && (
                             <div className="mt-3 text-[10px] text-sage font-bold uppercase tracking-tighter">
-                              Disponible tous les {service.day_of_week === 'monday' ? 'lundis' : 
+                              Disponible tous les {service.day_of_week === 'monday' ? 'lundis' :
                                                  service.day_of_week === 'tuesday' ? 'mardis' :
                                                  service.day_of_week === 'wednesday' ? 'mercredis' :
                                                  service.day_of_week === 'thursday' ? 'jeudis' :
@@ -509,7 +552,12 @@ const Reservation = ({ settings }: ReservationProps) => {
                         <span className="font-bold">{selectedDate?.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                       </div>
                       
-                      {selectedService?.price > 0 ? (
+                      {selectedService?.is_special_event ? (
+                        <div className="pt-3 border-t border-gold/20 flex justify-between items-center">
+                          <span className="text-dark/40">Participation</span>
+                          <span className="text-xl font-serif font-bold text-gold">Entrée libre</span>
+                        </div>
+                      ) : selectedService?.price > 0 ? (
                         <>
                           <div className="pt-3 border-t border-gold/10 flex justify-between text-sm">
                             <span className="text-dark/40">Sous-total</span>

@@ -13,6 +13,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import NotFound from './components/NotFound';
 import Hero from './sections/Hero';
+import JourneeInitiation from './sections/JourneeInitiation';
 import Philosophie from './sections/Philosophie';
 import Ateliers from './sections/Ateliers';
 import Univers from './sections/Univers';
@@ -181,6 +182,7 @@ const App = () => {
               </div>
             )}
             <Hero settings={settings} />
+            <JourneeInitiation />
             <Philosophie />
             <Ateliers settings={settings} />
             <Univers settings={settings} />
