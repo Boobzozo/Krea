@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'motion/react';
-import { MapPin, Mail, Phone, Instagram, Facebook, Send, CheckCircle2 } from 'lucide-react';
+import { MapPin, Mail, Phone, Instagram, Send, CheckCircle2 } from 'lucide-react';
 import axios from 'axios';
 import { scrollToElement } from '../lib/scrollUtils';
 
@@ -170,7 +170,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <h3 className="text-paper font-serif text-xl mb-1">Email</h3>
-                  <p className="text-paper/60">fromentink@gmail.com</p>
+                  <a href="mailto:fromentink@gmail.com" className="text-paper/60 hover:text-gold transition-colors">fromentink@gmail.com</a>
                 </div>
               </div>
 
@@ -180,7 +180,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <h3 className="text-paper font-serif text-xl mb-1">Téléphone</h3>
-                  <p className="text-paper/60">07 86 82 73 54</p>
+                  <a href="tel:+33786827354" className="text-paper/60 hover:text-gold transition-colors">07 86 82 73 54</a>
                 </div>
               </div>
             </div>
@@ -190,9 +190,6 @@ const Contact = () => {
               <div className="flex gap-6">
                 <a href="https://www.instagram.com/karine_fromentin_artiste?igsh=MTloaG52bHA0emZxbg==" target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-full bg-paper text-sage flex items-center justify-center hover:bg-gold hover:text-paper transition-all duration-300">
                   <Instagram size={24} />
-                </a>
-                <a href="#" className="w-12 h-12 rounded-full bg-paper text-sage flex items-center justify-center hover:bg-gold hover:text-paper transition-all duration-300">
-                  <Facebook size={24} />
                 </a>
               </div>
             </div>

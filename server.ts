@@ -489,15 +489,19 @@ async function startServer() {
       // 3. Async Secondary Tasks (Email & Webhook)
       (async () => {
         try {
-          const dateStr = new Date(start_time).toLocaleDateString('fr-FR', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
+          // timeZone obligatoire : le serveur (Hostinger) tourne en UTC,
+          // sans lui les mails affichent une heure décalée de 1-2h
+          const dateStr = new Date(start_time).toLocaleDateString('fr-FR', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            timeZone: 'Europe/Paris'
           });
-          const timeStr = new Date(start_time).toLocaleTimeString('fr-FR', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
+          const timeStr = new Date(start_time).toLocaleTimeString('fr-FR', {
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZone: 'Europe/Paris'
           });
 
           // Fetch service details for more accurate payload
@@ -508,15 +512,18 @@ async function startServer() {
             WHERE s.name = ?
           `).get(service_type) as { duration: number, price: number, category_name: string } | undefined;
 
-          const duration = service?.duration || 0;
+          // Si le service n'est pas en base (ex. événement spécial), on déduit la durée des horaires
+          const computedDuration = Math.round((new Date(end_time).getTime() - new Date(start_time).getTime()) / 60000);
+          const duration = service?.duration || (computedDuration > 0 ? computedDuration : 0);
           const unitPrice = service?.price || 0;
           const categoryName = service?.category_name || "Atelier";
           const subtotal = unitPrice * (participants || 1);
           const discountAmount = subtotal - (total_price || subtotal);
           const discountPercent = subtotal > 0 ? Math.round((discountAmount / subtotal) * 100) : 0;
 
-          // 1. Email to Customer
-          if (resend) {
+          // 1. Email to Customer — uniquement en secours si n8n n'est pas configuré,
+          // sinon le client recevrait deux confirmations (Resend + Gmail via n8n)
+          if (resend && !process.env.N8N_WEBHOOK_URL) {
             try {
               await resend.emails.send({
                 from: 'Kréa <onboarding@resend.dev>',

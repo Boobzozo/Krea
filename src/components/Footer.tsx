@@ -11,7 +11,7 @@ const Footer = () => {
         
         <div className="flex flex-wrap justify-center gap-12 mb-16 text-xs uppercase tracking-widest font-medium text-paper/80">
           <a href="#ateliers" onClick={(e) => { e.preventDefault(); scrollToElement('#ateliers'); }} className="hover:text-gold transition-colors">Ateliers</a>
-          <a href="#univers" onClick={(e) => { e.preventDefault(); scrollToElement('#univers'); }} className="hover:text-gold transition-colors">Univers</a>
+          <a href="#univers" onClick={(e) => { e.preventDefault(); scrollToElement('#univers'); }} className="hover:text-gold transition-colors">Galerie</a>
           <a href="#reservation" onClick={(e) => { e.preventDefault(); scrollToElement('#reservation'); }} className="hover:text-gold transition-colors">Réserver</a>
           <a href="#contact" onClick={(e) => { e.preventDefault(); scrollToElement('#contact'); }} className="hover:text-gold transition-colors">Contact</a>
         </div>
