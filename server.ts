@@ -265,13 +265,21 @@ async function startServer() {
   // Health check - DEFINED FIRST
   app.get("/api/health", (req, res) => {
     console.log("Health check request received at:", new Date().toISOString());
-    res.json({ 
-      status: "ok", 
+    let dbExists = null;
+    try { dbExists = fs.existsSync(dbPath); } catch (e) {}
+    res.json({
+      status: "ok",
       time: new Date().toISOString(),
       env: process.env.NODE_ENV,
       cwd: process.cwd(),
       node: process.version,
-      dbStatus: db ? "initialized" : "pending/none"
+      dbStatus: db ? "initialized" : "pending/none",
+      // --- diagnostic temporaire (persistance base) ---
+      dbPath,
+      dbExists,
+      __dirname,
+      homedir: os.homedir(),
+      DB_PATH_env: process.env.DB_PATH || null
     });
   });
 
