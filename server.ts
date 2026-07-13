@@ -26,21 +26,28 @@ console.log("Current working directory:", process.cwd());
 
 const FileStore = sessionFileStore(session);
 
-// DB_PATH permet de placer la base dans un dossier PERSISTANT hors du dossier
-// redéployé (sinon la base est recréée à vide à chaque déploiement Hostinger).
-// - non défini  -> comportement inchangé : krea.db à côté de l'app.
-// - chemin absolu (/home/u.../krea-data/krea.db) -> utilisé tel quel.
-// - chemin relatif (krea-data/krea.db) -> résolu depuis le dossier personnel
-//   du compte (os.homedir()), pour ne pas avoir à connaître le /home/u... exact.
+// Emplacement de la base — elle DOIT être persistante entre les déploiements.
+// Sur Hostinger, l'app tourne dans .../public_html qui est effacé à chaque
+// déploiement Git : y stocker krea.db la réinitialise à chaque fois.
+// Résolution (par ordre de priorité) :
+//   1. DB_PATH explicite (absolu, ou relatif au dossier personnel os.homedir()).
+//   2. Détection auto Hostinger : si l'app tourne dans "public_html", on place
+//      la base dans ~/krea-data (dossier personnel, JAMAIS écrasé au déploiement).
+//   3. Sinon (dev local), krea.db à côté de l'app.
 const os = require("os");
 let dbPath;
 if (process.env.DB_PATH) {
   dbPath = path.isAbsolute(process.env.DB_PATH)
     ? process.env.DB_PATH
     : path.join(os.homedir(), process.env.DB_PATH);
+} else if (__dirname.includes("public_html") && os.homedir()) {
+  // Serveur Hostinger : hors du dossier déployé.
+  dbPath = path.join(os.homedir(), "krea-data", "krea.db");
 } else {
+  // Développement local.
   dbPath = path.join(__dirname, "krea.db");
 }
+console.log(`[DB] Chemin de la base retenu : ${dbPath}`);
 // Crée le dossier de destination s'il n'existe pas encore (évite un crash au 1er lancement).
 try {
   const dbDir = path.dirname(dbPath);
