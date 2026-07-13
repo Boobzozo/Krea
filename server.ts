@@ -26,7 +26,28 @@ console.log("Current working directory:", process.cwd());
 
 const FileStore = sessionFileStore(session);
 
-const dbPath = path.join(__dirname, "krea.db");
+// DB_PATH permet de placer la base dans un dossier PERSISTANT hors du dossier
+// redéployé (sinon la base est recréée à vide à chaque déploiement Hostinger).
+// - non défini  -> comportement inchangé : krea.db à côté de l'app.
+// - chemin absolu (/home/u.../krea-data/krea.db) -> utilisé tel quel.
+// - chemin relatif (krea-data/krea.db) -> résolu depuis le dossier personnel
+//   du compte (os.homedir()), pour ne pas avoir à connaître le /home/u... exact.
+const os = require("os");
+let dbPath;
+if (process.env.DB_PATH) {
+  dbPath = path.isAbsolute(process.env.DB_PATH)
+    ? process.env.DB_PATH
+    : path.join(os.homedir(), process.env.DB_PATH);
+} else {
+  dbPath = path.join(__dirname, "krea.db");
+}
+// Crée le dossier de destination s'il n'existe pas encore (évite un crash au 1er lancement).
+try {
+  const dbDir = path.dirname(dbPath);
+  if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
+} catch (e) {
+  console.error("[DB] Impossible de créer le dossier de la base:", e.message);
+}
 const resendSecret = process.env.RESEND_API_KEY;
 const resend = resendSecret ? new Resend(resendSecret) : null;
 

@@ -26,6 +26,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useToast } from '../hooks/useToast';
+import { compressImage } from '../lib/imageUtils';
 
 // --- Types ---
 interface ToastProp {
@@ -243,24 +244,15 @@ const GalleryManager = ({ toast }: { toast: ToastProp }) => {
     toast.showLoading("Ajout de la photo...");
     
     try {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        try {
-          const base64String = reader.result as string;
-          await axios.post('/api/gallery', { url: base64String, caption });
-          setCaption('');
-          if (fileInputRef.current) fileInputRef.current.value = '';
-          await fetchGallery();
-          toast.showSuccess("Photo ajoutée à la galerie ✓");
-        } catch (err) {
-          toast.showError("Échec. Fichier trop lourd ou format invalide.");
-        } finally {
-          setIsUploading(false);
-        }
-      };
-      reader.readAsDataURL(file);
+      const base64String = await compressImage(file);
+      await axios.post('/api/gallery', { url: base64String, caption });
+      setCaption('');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      await fetchGallery();
+      toast.showSuccess("Photo ajoutée à la galerie ✓");
     } catch (err) {
       toast.showError("Échec. Fichier trop lourd ou format invalide.");
+    } finally {
       setIsUploading(false);
     }
   };
@@ -616,24 +608,16 @@ const MainPhotosManager = ({ settings, updateSetting, toast }: { settings: AppSe
 
     toast.showLoading("Upload de la photo en cours...");
 
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      try {
-        await updateSetting(key, reader.result as string);
-        toast.showSuccess("Photo mise à jour ✓");
-      } catch (err) {
-        toast.showError("Échec de l'upload. Vérifiez le fichier.");
-      } finally {
-        setIsSavingHero(false);
-        setIsSavingProfile(false);
-      }
-    };
-    reader.onerror = () => {
-      toast.showError("Erreur lors de la lecture du fichier.");
+    try {
+      const compressed = await compressImage(file);
+      await updateSetting(key, compressed);
+      toast.showSuccess("Photo mise à jour ✓");
+    } catch (err) {
+      toast.showError("Échec de l'upload. Vérifiez le fichier.");
+    } finally {
       setIsSavingHero(false);
       setIsSavingProfile(false);
-    };
-    reader.readAsDataURL(file);
+    }
   };
 
   return (
