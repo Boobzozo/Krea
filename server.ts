@@ -40,12 +40,14 @@ if (process.env.DB_PATH) {
   dbPath = path.isAbsolute(process.env.DB_PATH)
     ? process.env.DB_PATH
     : path.join(os.homedir(), process.env.DB_PATH);
-} else if (__dirname.includes("public_html") && os.homedir()) {
-  // Serveur Hostinger : hors du dossier déployé.
-  dbPath = path.join(os.homedir(), "krea-data", "krea.db");
 } else {
-  // Développement local.
-  dbPath = path.join(__dirname, "krea.db");
+  // Sur Hostinger, __dirname = /home/uXXXX/domains/<site>/nodejs (effacé au déploiement).
+  // On remonte au dossier du compte (/home/uXXXX) pour y placer une base persistante,
+  // car os.homedir() ne pointe pas vers le compte sur cet hébergement.
+  const accountHome = (__dirname.match(/^(\/home\/[^/]+)\//) || [])[1];
+  dbPath = accountHome
+    ? path.join(accountHome, "krea-data", "krea.db")
+    : path.join(__dirname, "krea.db"); // développement local
 }
 console.log(`[DB] Chemin de la base retenu : ${dbPath}`);
 // Crée le dossier de destination s'il n'existe pas encore (évite un crash au 1er lancement).
@@ -265,21 +267,13 @@ async function startServer() {
   // Health check - DEFINED FIRST
   app.get("/api/health", (req, res) => {
     console.log("Health check request received at:", new Date().toISOString());
-    let dbExists = null;
-    try { dbExists = fs.existsSync(dbPath); } catch (e) {}
     res.json({
       status: "ok",
       time: new Date().toISOString(),
       env: process.env.NODE_ENV,
       cwd: process.cwd(),
       node: process.version,
-      dbStatus: db ? "initialized" : "pending/none",
-      // --- diagnostic temporaire (persistance base) ---
-      dbPath,
-      dbExists,
-      __dirname,
-      homedir: os.homedir(),
-      DB_PATH_env: process.env.DB_PATH || null
+      dbStatus: db ? "initialized" : "pending/none"
     });
   });
 
